@@ -200,3 +200,17 @@ test("slash command payload with malformed named args", async () => {
   };
   expect(getSlashCommandPayload(commandWords, namedArgs)).toEqual(payload);
 });
+
+
+test("slash command payload2", async () => {
+    commandWords = ["test", "arg1", "arg2", "arg3"];
+    payload = {
+        command: "test",
+        args: "arg1 arg2 arg3",
+        arg1: "arg1",
+        arg2: "arg2",
+        arg3: "arg3",
+        github: {foo:1}
+    };
+    expect(Object.assign(getSlashCommandPayload(commandWords), {github:{foo:1}})).toEqual(payload);
+});

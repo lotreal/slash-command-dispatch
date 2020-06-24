@@ -135,8 +135,7 @@ async function run() {
     core.info(`Command '${commandWords[0]}' to be dispatched.`);
 
     // Define payload
-    var clientPayload = {
-      slash_command: {},
+    var payloadContext = {
       github: github.context
     };
 
@@ -146,18 +145,18 @@ async function run() {
         ...github.context.repo,
         pull_number: github.context.payload.issue.number
       });
-      clientPayload["pull_request"] = pullRequest;
+      payloadContext["pull_request"] = pullRequest;
     }
 
     // Dispatch for each matching configuration
     for (const cmd of configMatches) {
       // Generate slash command payload
-      clientPayload.slash_command = getSlashCommandPayload(
+      var clientPayload = Object.assign(getSlashCommandPayload(
         commandWords,
         cmd.named_args
-      );
+      ), payloadContext);
       core.debug(
-        `Slash command payload: ${inspect(clientPayload.slash_command)}`
+        `client_payload: ${inspect(clientPayload)}`
       );
       // Dispatch the command
       const dispatchRepo = cmd.repository.split("/");
