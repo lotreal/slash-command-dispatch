@@ -10,7 +10,7 @@ const commandDefaults = Object.freeze({
   issue_type: "both",
   allow_edits: false,
   repository: process.env.GITHUB_REPOSITORY,
-  event_type_suffix: "-command",
+  event_type_suffix: "",
   named_args: false
 });
 
