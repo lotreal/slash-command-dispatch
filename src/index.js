@@ -103,13 +103,13 @@ async function run() {
 
     // At this point we know the command is registered
     // Add the "eyes" reaction to the comment
-    if (inputs.reactions)
-      await addReaction(
-        reactionOctokit,
-        github.context.repo,
-        commentId,
-        "eyes"
-      );
+    // if (inputs.reactions)
+    //   await addReaction(
+    //     reactionOctokit,
+    //     github.context.repo,
+    //     commentId,
+    //     "eyes"
+    //   );
 
     // Get the actor permission
     const actorPermission = await getActorPermission(
