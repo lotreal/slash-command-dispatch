@@ -160,6 +160,8 @@ test("actor has permission", async () => {
 });
 
 test("slash command payload", async () => {
+  documents = "";
+  named_args = false;
   commandWords = ["test", "arg1", "arg2", "arg3"];
   payload = {
     command: "test",
@@ -168,12 +170,13 @@ test("slash command payload", async () => {
     arg2: "arg2",
     arg3: "arg3"
   };
-  expect(getSlashCommandPayload(commandWords)).toEqual(payload);
+  expect(getSlashCommandPayload(commandWords, {documents, named_args})).toEqual(payload);
 });
 
 test("slash command payload with named args", async () => {
+  documents = "";
+  named_args = true;
   commandWords = ["test", "branch=master", "arg1", "env=prod", "arg2"];
-  namedArgs = true;
   payload = {
     command: "test",
     args: "branch=master arg1 env=prod arg2",
@@ -183,12 +186,13 @@ test("slash command payload with named args", async () => {
     arg1: "arg1",
     arg2: "arg2"
   };
-  expect(getSlashCommandPayload(commandWords, namedArgs)).toEqual(payload);
+  expect(getSlashCommandPayload(commandWords, {documents, named_args})).toEqual(payload);
 });
 
 test("slash command payload with malformed named args", async () => {
+  documents = "";
+  named_args = true;
   commandWords = ["test", "branch=", "arg1", "e-nv=prod", "arg2"];
-  namedArgs = true;
   payload = {
     command: "test",
     args: "branch= arg1 e-nv=prod arg2",
@@ -198,19 +202,18 @@ test("slash command payload with malformed named args", async () => {
     arg3: "e-nv=prod",
     arg4: "arg2"
   };
-  expect(getSlashCommandPayload(commandWords, namedArgs)).toEqual(payload);
+  expect(getSlashCommandPayload(commandWords, {documents, named_args})).toEqual(payload);
 });
 
-
-test("slash command payload2", async () => {
-    commandWords = ["test", "arg1", "arg2", "arg3"];
-    payload = {
-        command: "test",
-        args: "arg1 arg2 arg3",
-        arg1: "arg1",
-        arg2: "arg2",
-        arg3: "arg3",
-        github: {foo:1}
-    };
-    expect(Object.assign(getSlashCommandPayload(commandWords), {github:{foo:1}})).toEqual(payload);
+test("slash command pattern", async () => {
+  documents = "deploy dist sha";
+  named_args = true;
+  commandWords = ["deploy", "test", "9f7bf51"];
+  payload = {
+    command: "deploy",
+    args: "test 9f7bf51",
+    dist: "test",
+    sha: "9f7bf51"
+  };
+  expect(getSlashCommandPayload(commandWords, {documents, named_args})).toEqual(payload);
 });
