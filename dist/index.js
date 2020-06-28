@@ -4952,6 +4952,7 @@ const commandDefaults = Object.freeze({
   allow_edits: false,
   repository: process.env.GITHUB_REPOSITORY,
   event_type_suffix: "",
+  documents: "",
   named_args: false
 });
 
@@ -5020,6 +5021,7 @@ function getCommandsConfigFromInputs(inputs) {
     cmd.event_type_suffix = inputs.eventTypeSuffix
       ? inputs.eventTypeSuffix
       : cmd.event_type_suffix;
+    cmd.documents = inputs.documents ? inputs.documents : cmd.documents;
     cmd.named_args = toBool(inputs.namedArgs, cmd.named_args);
     config.push(cmd);
   }
@@ -5042,6 +5044,7 @@ function getCommandsConfigFromJson(json) {
     cmd.event_type_suffix = jc.event_type_suffix
       ? jc.event_type_suffix
       : cmd.event_type_suffix;
+    cmd.documents = jc.documents ? jc.documents : cmd.documents;
     cmd.named_args = toBool(jc.named_args, cmd.named_args);
     config.push(cmd);
   }
@@ -5101,7 +5104,7 @@ async function addReaction(octokit, repo, commentId, reaction) {
   }
 }
 
-function getSlashCommandPayload(commandWords, namedArgs) {
+function getSlashCommandPayload(commandWords, cmd) {
   var payload = {
     command: commandWords[0],
     args: ""
@@ -5109,22 +5112,30 @@ function getSlashCommandPayload(commandWords, namedArgs) {
   if (commandWords.length > 1) {
     const argWords = commandWords.slice(1, MAX_ARGS + 1);
     payload.args = argWords.join(" ");
-    // Parse named and unnamed args
-    var unnamedCount = 1;
-    var unnamedArgs = [];
-    for (var argWord of argWords) {
-      if (namedArgs && namedArgPattern.test(argWord)) {
-        const { groups: { name, value } } = namedArgPattern.exec(argWord);
-        payload[`${name}`] = value;
-      } else {
-        unnamedArgs.push(argWord)
-        payload[`arg${unnamedCount}`] = argWord;
-        unnamedCount += 1;
+
+    if (cmd.documents != "") {
+      var patterns = cmd.documents.split(" ").slice(1, MAX_ARGS + 1);
+      for(let i = 0; i < argWords.length; i++) {
+        payload[patterns[i].toLowerCase()] = argWords[i];
       }
-    }
-    // Add a string of only the unnamed args
-    if (namedArgs && unnamedArgs.length > 0) {
-      payload["unnamed_args"] = unnamedArgs.join(" ");
+    } else {
+      // Parse named and unnamed args
+      var unnamedCount = 1;
+      var unnamedArgs = [];
+      for (var argWord of argWords) {
+        if (cmd.named_args && namedArgPattern.test(argWord)) {
+          const { groups: { name, value } } = namedArgPattern.exec(argWord);
+          payload[`${name}`] = value;
+        } else {
+          unnamedArgs.push(argWord)
+          payload[`arg${unnamedCount}`] = argWord;
+          unnamedCount += 1;
+        }
+      }
+      // Add a string of only the unnamed args
+      if (cmd.named_args && unnamedArgs.length > 0) {
+        payload["unnamed_args"] = unnamedArgs.join(" ");
+      }
     }
   }
   return payload;
@@ -8933,7 +8944,8 @@ async function run() {
     core.info(`Command '${commandWords[0]}' to be dispatched.`);
 
     // Define payload
-    var payloadContext = {
+    var clientPayload = {
+      args: {},
       github: github.context
     };
 
@@ -8943,18 +8955,18 @@ async function run() {
         ...github.context.repo,
         pull_number: github.context.payload.issue.number
       });
-      payloadContext["pull_request"] = pullRequest;
+      clientPayload["pull_request"] = pullRequest;
     }
 
     // Dispatch for each matching configuration
     for (const cmd of configMatches) {
       // Generate slash command payload
-      var clientPayload = Object.assign(getSlashCommandPayload(
+      clientPayload.args = getSlashCommandPayload(
         commandWords,
         cmd.named_args
-      ), payloadContext);
+      );
       core.debug(
-        `client_payload: ${inspect(clientPayload)}`
+        `Args payload: ${inspect(clientPayload.args)}`
       );
       // Dispatch the command
       const dispatchRepo = cmd.repository.split("/");

@@ -175,7 +175,7 @@ function getSlashCommandPayload(commandWords, cmd) {
     if (cmd.documents != "") {
       var patterns = cmd.documents.split(" ").slice(1, MAX_ARGS + 1);
       for(let i = 0; i < argWords.length; i++) {
-        payload[patterns[i]] = argWords[i];
+        payload[patterns[i].toLowerCase()] = argWords[i];
       }
     } else {
       // Parse named and unnamed args

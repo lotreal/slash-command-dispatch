@@ -206,7 +206,7 @@ test("slash command payload with malformed named args", async () => {
 });
 
 test("slash command pattern", async () => {
-  documents = "deploy dist sha";
+  documents = "deploy DIST SHA";
   named_args = true;
   commandWords = ["deploy", "test", "9f7bf51"];
   payload = {
