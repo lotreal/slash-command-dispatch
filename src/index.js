@@ -154,7 +154,7 @@ async function run() {
       // Generate slash command payload
       clientPayload.args = getSlashCommandPayload(
         commandWords,
-        cmd.named_args
+        cmd
       );
       core.debug(
         `Args payload: ${inspect(clientPayload.args)}`
