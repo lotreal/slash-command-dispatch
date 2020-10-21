@@ -21,17 +21,17 @@ Follow this guide to get started with a working `/example` command.
           - name: Add reaction
             uses: peter-evans/create-or-update-comment@v1
             with:
-              token: ${{ secrets.REPO_ACCESS_TOKEN }}
+              token: ${{ secrets.PAT }}
               repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
               comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
               reaction-type: hooray
     ```
 
-3. Create a `repo` scoped Personal Access Token (PAT) by following [this guide](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line).
+3. Create a `repo` scoped Personal Access Token (PAT) by following [this guide](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
 
 4. Go to your repository `Settings` -> `Secrets` and `Add a new secret`.
 
-   **Name**: `REPO_ACCESS_TOKEN`
+   **Name**: `PAT`
 
    **Value**: (The PAT created in step 3)
 
@@ -56,18 +56,18 @@ Command processing setup is complete! Now we need to setup command dispatch for 
         runs-on: ubuntu-latest
         steps:
           - name: Slash Command Dispatch
-            uses: peter-evans/slash-command-dispatch@v1
+            uses: peter-evans/slash-command-dispatch@v2
             with:
-              token: ${{ secrets.REPO_ACCESS_TOKEN }}
+              token: ${{ secrets.PAT }}
               commands: example
               repository: your-github-username/slash-command-processor
     ```
 
-2. Create a new `repo` scoped [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line), OR, use the one created at step 3 of the [previous section](#command-processing-setup).
+2. Create a new `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token), OR, use the one created at step 3 of the [previous section](#command-processing-setup).
 
 3. Go to your repository `Settings` -> `Secrets` and `Add a new secret`.
 
-   **Name**: `REPO_ACCESS_TOKEN`
+   **Name**: `PAT`
 
    **Value**: (The PAT created in step 2)
 

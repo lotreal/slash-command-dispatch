@@ -18,12 +18,15 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          commands: hello-world-local, ping-local
+          commands: |
+            hello-world-local
+            ping-local
           permission: none
           issue-type: issue
 
       # Advanced JSON configuration
       - name: Slash Command Dispatch (JSON)
+        id: scd
         uses: ./
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
@@ -68,6 +71,19 @@ jobs:
                 "event_type_suffix": "-pr-command"
               },
               {
+                "command": "hello-workflow",
+                "permission": "none",
+                "issue_type": "issue",
+                "repository": "peter-evans/slash-command-dispatch-processor",
+                "static_args": [
+                  "repository=${{ github.repository }}",
+                  "comment-id=${{ github.event.comment.id }}",
+                  "issue-number=${{ github.event.issue.number }}",
+                  "actor=${{ github.actor }}"
+                ],
+                "dispatch_type": "workflow"
+              },
+              {
                 "command": "ping",
                 "permission": "none",
                 "issue_type": "issue",
@@ -86,6 +102,14 @@ jobs:
                 "repository": "peter-evans/slash-command-dispatch-processor"
               }
             ]
+
+      - name: Edit comment with error message
+        if: steps.scd.outputs.error-message
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > ${{ steps.scd.outputs.error-message }}
 
       # Advanced JSON configuration from file
       # (These commands do not do anything and are just a reference example)
